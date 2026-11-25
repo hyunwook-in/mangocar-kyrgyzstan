@@ -126,6 +126,7 @@ tr:last-child td{border-bottom:0}
         <label class="field"><span data-i="inYear"></span><select id="in-year"></select></label>
         <label class="field"><span data-i="inCc"></span><input id="in-cc" type="number" min="0" step="100" value="2000"></label>
         <label class="field"><span data-i="inFuel"></span><select id="in-fuel"></select></label>
+        <label class="field"><span data-i="inBody"></span><select id="in-body"></select></label>
         <label class="field"><span data-i="inKg"></span><input id="in-kg" type="number" min="0" step="100" value="24000"></label>
       </div>
       <div class="tblwrap"><table id="calc-table"></table></div>
@@ -171,11 +172,11 @@ const T={
  ru:{eyebrow:"Импорт из Кореи · данные на ",h1:"Сколько можно заработать на авто из Кореи в Кыргызстане?",
   lede:"Мы сравнили каждый автомобиль из наличия Mangocar с похожими объявлениями на mashina.kg: та же модель, тот же год, то же топливо, тот же объём двигателя и похожий пробег. В расчёт включены доставка, растаможка и оформление в Кыргызстане.",
   k1:"автомобилей сравнено",k2:"дешевле рынка Кыргызстана после всех расходов",k3:"медианная доп. прибыль таких авто",k4:"доп. прибыль в верхней четверти (от)",
-  calcH:"Как мы считаем",calcSub:"Цена в Корее плюс доставка до Бишкека, таможенная пошлина по ставкам ЕАЭС, НДС 12 % и сбор 0,4 %, плюс брокер и регистрация — это полная стоимость. Разница с ценой на рынке Кыргызстана — ваша дополнительная прибыль. Введите свои значения.",
-  inUsd:"Цена в Корее (USD)",inYear:"Год выпуска",inCc:"Объём двигателя (см³)",inFuel:"Топливо",inKg:"Цена на рынке КР (USD)",
+  calcH:"Как мы считаем",calcSub:"Цена в Корее плюс доставка до Бишкека (по типу кузова), таможенная пошлина по ЕТТ ЕАЭС, НДС 12 % и таможенный сбор 0,4 %, плюс брокер и регистрация в ГУ «Унаа» — это полная стоимость. Разница с ценой на рынке Кыргызстана — ваша дополнительная прибыль. Введите свои значения.",
+  inUsd:"Цена в Корее (USD)",inYear:"Год выпуска",inCc:"Объём двигателя (см³)",inFuel:"Топливо",inBody:"Тип кузова (доставка)",bodies:["Малолитражка — $1 300","Седан — $2 100","Кроссовер / минивэн — $2 600"],inKg:"Цена на рынке КР (USD)",
   cUsd:"Цена в Корее",cShip:"Доставка",cDuty:"Пошлина",cVat:"НДС 12 % + сбор",cLocal:"Брокер + регистрация",cFinal:"Полная стоимость",cKg:"Цена в КР",cGap:"Доп. прибыль",
   wfK:"Расходы",wfD:"Цена в КР",lg:["Авто в Корее","Доставка","Пошлина","НДС + сбор","Брокер + регистрация","Доп. прибыль"],
-  dutyRule:{new:"15 % от стоимости (авто 2025–2026 г.)",mid:"20 % от стоимости, но не менее €{r}/см³ (2020–2024 г.)",old:"€{r}/см³ (2019 г. и старше)",ev:"0 % — электромобиль в пределах квоты ЕАЭС"},
+  dutyRule:{new:"15 % от стоимости (младше 3 лет, 2024–2026 г.)",newBig:"12,5 % от стоимости (бензин свыше 2 800 см³, младше 3 лет)",mid:"20 % от стоимости, но не менее €{r}/см³ (3–7 лет, 2020–2023 г.)",old:"€{r}/см³ (старше 7 лет, 2019 г. и ранее)",ev:"15 % от стоимости — беспошлинная квота ЕАЭС на 2026 год исчерпана; НДС не взимается"},
   condH:"Доп. прибыль по параметрам авто",condSub:"Медианная доп. прибыль на автомобиль в каждой группе. Доля показывает, сколько авто в группе после всех расходов дешевле рынка Кыргызстана.",
   fMake:"Марка",fFuel:"Топливо",fYear:"Год от",fKm:"Пробег до",fBudget:"Полная стоимость до",all:"Все",
   pAge:"Год выпуска",pKm:"Пробег (км)",pPrice:"Полная стоимость авто",pFuel:"Топливо",pCc:"Объём двигателя",cars:"авто",ofCars:"в плюсе",
@@ -189,17 +190,19 @@ const T={
   notes:d=>[
    `<b>Источники.</b> Наличие Mangocar и объявления mashina.kg (легковые, 2012 г. и новее, марки из наличия Mangocar), собраны ${d.date}. Сравнено ${fmtN(d.cars.length)} автомобилей с ${fmtN(d.kgListings)} объявлениями в Кыргызстане.`,
    `<b>Цена в Кыргызстане.</b> Медиана цен объявлений mashina.kg (USD) для той же модели, года выпуска, топлива и объёма двигателя (±0,15 л) с похожим пробегом (±30 %; до 20 000 км — до 40 000 км). Не менее четырёх объявлений, выбросы удалены. Праворульные авто исключены, так как их нельзя поставить на учёт в КР. Комплектация может отличаться. Авто, у которых цена в КР более чем на 75 % выше или ниже полной стоимости, исключены как вероятное несовпадение комплектации.`,
-   `<b>Расходы.</b> Доставка Корея → Бишкек $${fmtN(d.cost.ship)}; таможенная стоимость = цена + доставка; пошлина по ЕТТ ЕАЭС: 2025–2026 г. — 15 %, 2020–2024 г. — 20 %, но не менее €0,32–0,80/см³, 2019 г. и старше — €1,4–3,2/см³; гибриды — как бензин; электромобили — 0 % (квота ЕАЭС). НДС 12 % от (таможенная стоимость + пошлина), таможенный сбор 0,4 %, брокер и регистрация $${fmtN(d.cost.local)}. Курс €1 = $${String(d.cost.eurUsd).replace('.',',')}.`,
+   `<b>Доставка.</b> Корея → Бишкек контейнером через Китай (паром, ж/д до Нарынской области, трал до Бишкека), около 20 дней: малолитражка $${fmtN(d.cost.ship[0])}, седан $${fmtN(d.cost.ship[1])}, кроссовер, внедорожник или минивэн $${fmtN(d.cost.ship[2])} (тарифы encar.kg). Тип кузова определён по модели.`,
+   `<b>Таможня.</b> Ставки ЕТТ ЕАЭС (Решение Совета ЕЭК № 80, ред. от 21.09.2026), позиция 8703. Младше 3 лет (2024–2026 г.): 15 %, бензин свыше 2 800 см³ — 12,5 %. От 3 до 7 лет (2020–2023 г.): 20 %, но не менее €0,36–0,80/см³ (бензин) или €0,32–0,80/см³ (дизель). Старше 7 лет (2019 г. и ранее): бензин €1,4–3,2/см³, дизель €1,5–3,2/см³. Гибриды, у которых ДВС мощнее электромотора, считаются как бензин. Электромобили: беспошлинная квота 2026 года исчерпана, поэтому 15 %; НДС не взимается (НК КР, ст. 297). Таможенная стоимость = цена + доставка; на практике ГТС КР может считать от справочной стоимости (СИР). НДС 12 % от (таможенная стоимость + пошлина), таможенный сбор 0,4 %. Курс НБКР на 25.11.2026: €1 = $${String(d.cost.eurUsd).replace('.',',')}.`,
+   `<b>Оформление.</b> Таможенный брокер $${fmtN(d.cost.broker)} (7 000 сом, encar.kg). Регистрация, номера и техосмотр в ГУ «Унаа» — оценка $${fmtN(d.cost.reg)}, так как официальный тариф не опубликован.`,
    `<b>Не включено.</b> Расходы на продажу, предпродажная подготовка, финансирование, курсовые колебания. Ставки пошлины зависят от решения таможни и могут меняться; беспошлинная квота на электромобили ограничена.`,
    `<b>Важно.</b> Все значения — оценки на основе публичных объявлений, а не гарантия цены продажи.`]},
  en:{eyebrow:"Import from Korea · Data as of ",h1:"How much can a used car from Korea earn in Kyrgyzstan?",
   lede:"We compared every car in Mangocar's stock with similar listings on mashina.kg: same model, same year, same fuel, same engine size and similar mileage. Shipping, customs clearance and registration in Kyrgyzstan are included.",
   k1:"cars compared",k2:"cost less than the Kyrgyz market price after all costs",k3:"median extra margin of those cars",k4:"extra margin in the top quarter (from)",
-  calcH:"How we calculate",calcSub:"Price in Korea plus shipping to Bishkek, EAEU customs duty, 12% VAT and 0.4% customs fee, plus broker and registration gives the total cost. The difference to the Kyrgyz market price is your extra margin. Try your own figures.",
-  inUsd:"Price in Korea (USD)",inYear:"Model year",inCc:"Engine size (cm³)",inFuel:"Fuel",inKg:"Kyrgyz market price (USD)",
+  calcH:"How we calculate",calcSub:"Price in Korea plus shipping to Bishkek (by body type), EAEU customs duty, 12% VAT and 0.4% customs fee, plus broker and registration at GU Unaa gives the total cost. The difference to the Kyrgyz market price is your extra margin. Try your own figures.",
+  inUsd:"Price in Korea (USD)",inYear:"Model year",inCc:"Engine size (cm³)",inFuel:"Fuel",inBody:"Body type (shipping)",bodies:["Small car — $1,300","Sedan — $2,100","SUV / crossover / van — $2,600"],inKg:"Kyrgyz market price (USD)",
   cUsd:"Price Korea",cShip:"Shipping",cDuty:"Customs duty",cVat:"VAT 12% + fee",cLocal:"Broker + registration",cFinal:"Total cost",cKg:"Kyrgyz price",cGap:"Extra margin",
   wfK:"Cost",wfD:"Kyrgyz price",lg:["Car in Korea","Shipping","Duty","VAT + fee","Broker + registration","Extra margin"],
-  dutyRule:{new:"15% of value (2025–2026 cars)",mid:"20% of value, at least €{r}/cm³ (2020–2024 cars)",old:"€{r}/cm³ (2019 and older)",ev:"0% — electric car within the EAEU quota"},
+  dutyRule:{new:"15% of value (under 3 years, 2024–2026 cars)",newBig:"12.5% of value (petrol over 2,800 cm³, under 3 years)",mid:"20% of value, at least €{r}/cm³ (3–7 years, 2020–2023 cars)",old:"€{r}/cm³ (over 7 years, 2019 and older)",ev:"15% of value — the 2026 EAEU duty-free quota is used up; no VAT"},
   condH:"Extra margin by vehicle condition",condSub:"Median extra margin per car in each group. The share shows how many cars in the group cost less than the Kyrgyz market price after all costs.",
   fMake:"Make",fFuel:"Fuel",fYear:"Year from",fKm:"Mileage up to",fBudget:"Total cost up to",all:"All",
   pAge:"Model year",pKm:"Mileage (km)",pPrice:"Total cost per car",pFuel:"Fuel",pCc:"Engine size",cars:"cars",ofCars:"positive",
@@ -213,12 +216,14 @@ const T={
   notes:d=>[
    `<b>Data sources.</b> Mangocar stock and mashina.kg listings (passenger cars, 2012 or newer, makes in Mangocar's stock), retrieved on ${d.date}. ${fmtN(d.cars.length)} cars were compared with ${fmtN(d.kgListings)} Kyrgyz listings.`,
    `<b>Kyrgyz market price.</b> Median asking price on mashina.kg (USD) for the same model, year, fuel and engine size (±0.15 L) with similar mileage (±30%; below 20,000 km up to 40,000 km). At least four comparable listings; outliers removed. Right-hand-drive cars are excluded because they cannot be registered in Kyrgyzstan. Trim can differ. Cars whose Kyrgyz price is more than 75% above or below the total cost are left out as a likely trim mismatch.`,
-   `<b>Costs.</b> Shipping Korea → Bishkek $${fmtN(d.cost.ship)}; customs value = price + shipping; EAEU duty: 2025–2026 cars 15%, 2020–2024 cars 20% but at least €0.32–0.80/cm³, 2019 and older €1.4–3.2/cm³; hybrids as petrol; electric 0% (EAEU quota). VAT 12% of (customs value + duty), customs fee 0.4%, broker and registration $${fmtN(d.cost.local)}. €1 = $${d.cost.eurUsd}.`,
+   `<b>Shipping.</b> Korea → Bishkek by container via China (ferry, rail to Naryn region, trailer to Bishkek), about 20 days: small car $${fmtN(d.cost.ship[0])}, sedan $${fmtN(d.cost.ship[1])}, SUV, crossover or van $${fmtN(d.cost.ship[2])} (encar.kg rates). Body type is set from the model.`,
+   `<b>Customs.</b> EAEU Common Customs Tariff (EEC Council Decision No. 80, as amended 21.09.2026), heading 8703. Under 3 years (2024–2026 cars): 15%, petrol over 2,800 cm³ 12.5%. 3–7 years (2020–2023): 20%, at least €0.36–0.80/cm³ (petrol) or €0.32–0.80/cm³ (diesel). Over 7 years (2019 and older): petrol €1.4–3.2/cm³, diesel €1.5–3.2/cm³. Hybrids whose combustion engine is stronger than the electric motor are taxed as petrol. Electric: the 2026 duty-free quota is used up, so 15%, and no VAT (Tax Code KR, art. 297). Customs value = price + shipping; in practice the State Customs Service may use its own reference value. VAT 12% of (customs value + duty), customs fee 0.4%. NBKR rate on 25.11.2026: €1 = $${d.cost.eurUsd}.`,
+   `<b>Clearance.</b> Customs broker $${fmtN(d.cost.broker)} (7,000 som, encar.kg). Registration, plates and inspection at GU Unaa estimated at $${fmtN(d.cost.reg)}, as no official tariff is published.`,
    `<b>Not included.</b> Selling costs, reconditioning, financing and exchange-rate moves. Duty depends on the customs decision and can change; the duty-free quota for electric cars is limited.`,
    `<b>Note.</b> All figures are estimates based on public listings and are not a promise of a sale price.`]}
 };
 const FUELS=["Petrol","Diesel","Hybrid","Electric"];
-const DEF={eurUsd:1.09,ship:2100,local:400,vat:.12,fee:.004,refYear:2026};
+const DEF={eurUsd:1.092,ship:[1300,2100,2600],broker:80,reg:150,vat:.12,fee:.004,refYear:2026};
 let L='ru',D=null,showAll=false;
 try{const s=localStorage.getItem('kr-kg-lang');if(s==='en'||s==='ru')L=s}catch(e){}
 const loc=()=>L==='ru'?'ru-RU':'en-GB';
@@ -234,13 +239,13 @@ function perCc(cc,diesel,over7){
   return over7?(cc<=1000?1.4:cc<=1500?1.5:cc<=1800?1.6:cc<=3000?2.2:3.2):(cc<=1000?.36:cc<=1500?.40:cc<=1800?.36:cc<=3000?.44:.80);
 }
 function duty(value,year,cc,fuel,c){
-  if(fuel==='Electric')return {v:0,rule:'ev'};
-  const age=c.refYear-year,dz=fuel==='Diesel';
-  if(age<=1)return {v:value*.15,rule:'new'};
-  if(age<=6){const r=perCc(cc,dz,false);return {v:Math.max(value*.2,r*cc*c.eurUsd),rule:'mid',r}}
+  if(fuel==='Electric')return {v:value*.15,rule:'ev'};
+  const dz=fuel==='Diesel';
+  if(year>=2024){const big=!dz&&cc>2800;return {v:value*(big?.125:.15),rule:big?'newBig':'new'}}
+  if(year>=2020){const r=perCc(cc,dz,false);return {v:Math.max(value*.2,r*cc*c.eurUsd),rule:'mid',r}}
   const r=perCc(cc,dz,true);return {v:r*cc*c.eurUsd,rule:'old',r};
 }
-function cost(usd,year,cc,fuel,c){const value=usd+c.ship,du=duty(value,year,cc,fuel,c),vat=value*c.fee+(value+du.v)*c.vat;return {usd,ship:c.ship,duty:du.v,rule:du,vat,local:c.local,final:usd+c.ship+du.v+vat+c.local}}
+function cost(usd,year,cc,fuel,sc,c){const ship=c.ship[sc],local=c.broker+c.reg,value=usd+ship,du=duty(value,year,cc,fuel,c),vat=value*c.fee+(fuel==='Electric'?0:(value+du.v)*c.vat);return {usd,ship,duty:du.v,rule:du,vat,local,final:usd+ship+du.v+vat+local}}
 const $=id=>document.getElementById(id);
 
 function applyText(){
@@ -250,15 +255,16 @@ function applyText(){
   $('lang-ru').setAttribute('aria-pressed',L==='ru');$('lang-en').setAttribute('aria-pressed',L==='en');
 }
 function fillCalcSelects(){
-  const t=T[L],yv=$('in-year').value||'2021',fv=$('in-fuel').value||'Petrol';
+  const t=T[L],yv=$('in-year').value||'2021',fv=$('in-fuel').value||'Petrol',bv=$('in-body').value||'2';
+  $('in-body').innerHTML=t.bodies.map((b,i)=>`<option value="${i}">${b}</option>`).join('');
   $('in-year').innerHTML=Array.from({length:15},(_,i)=>2026-i).map(y=>`<option value="${y}">${y}</option>`).join('');
   $('in-fuel').innerHTML=FUELS.map(f=>`<option value="${f}">${t.fuels[f]}</option>`).join('');
-  $('in-year').value=yv;$('in-fuel').value=fv;
+  $('in-year').value=yv;$('in-fuel').value=fv;$('in-body').value=bv;
 }
 function renderCalc(){
   const t=T[L],c=D?D.cost:DEF;
-  const usd=+$('in-usd').value||0,y=+$('in-year').value,cc=+$('in-cc').value||0,f=$('in-fuel').value,kg=+$('in-kg').value||0;
-  const k=cost(usd,y,cc,f,c),gap=kg-k.final;
+  const usd=+$('in-usd').value||0,y=+$('in-year').value,cc=+$('in-cc').value||0,f=$('in-fuel').value,sc=+$('in-body').value,kg=+$('in-kg').value||0;
+  const k=cost(usd,y,cc,f,sc,c),gap=kg-k.final;
   const rule=t.dutyRule[k.rule.rule].replace('{r}',k.rule.r!==undefined?(L==='ru'?String(k.rule.r).replace('.',','):k.rule.r):'');
   $('calc-table').innerHTML=`<thead><tr><th>${t.cUsd}</th><th>${t.cShip}</th><th>${t.cDuty}</th><th>${t.cVat}</th><th>${t.cLocal}</th><th class="hl">${t.cFinal}</th><th>${t.cKg}</th><th class="hl">${t.cGap}</th></tr></thead>
    <tbody><tr><td>${fmtD(usd)}</td><td>${fmtD(k.ship)}</td><td>${fmtD(k.duty)}</td><td>${fmtD(k.vat)}</td><td>${fmtD(k.local)}</td><td class="hl"><b>${fmtD(k.final)}</b></td><td>${fmtD(kg)}</td><td class="hl ${gap>=0?'gap-pos':'gap-neg'}">${fmtSigned(gap)}</td></tr>
@@ -268,7 +274,7 @@ function renderCalc(){
    <div class="wfrow"><span>${t.wfD}</span><div class="bar"><span style="width:${w(Math.min(kg,k.final))};background:var(--line)"></span><span style="width:${w(gap)};background:var(--pos)"></span></div></div>`;
   $('legend').innerHTML=['var(--car)','var(--ship)','var(--duty)','var(--vat)','var(--local)','var(--pos)'].map((c2,i)=>`<span><i style="background:${c2}"></i>${t.lg[i]}</span>`).join('');
 }
-function enrich(){D.rows=D.cars.map(r=>{const k=cost(r[5],r[2],r[9],D.fuels[r[3]],D.cost);return {mk:r[0],mo:r[1],y:r[2],f:r[3],km:r[4]*1000,usd:r[5],kg:r[6],n:r[7],code:r[8],cc:r[9],final:k.final,gap:r[6]-k.final}})}
+function enrich(){D.rows=D.cars.map(r=>{const k=cost(r[5],r[2],r[9],D.fuels[r[3]],r[10],D.cost);return {mk:r[0],mo:r[1],y:r[2],f:r[3],km:r[4]*1000,usd:r[5],kg:r[6],n:r[7],code:r[8],cc:r[9],final:k.final,gap:r[6]-k.final}})}
 function fillFilters(){
   const t=T[L],keep=id=>$(id).value;
   const mv=keep('f-make'),fv=keep('f-fuel'),yv=keep('f-year'),kv=keep('f-km'),bv=keep('f-budget');
@@ -326,7 +332,7 @@ function renderAll(){applyText();renderCalc();if(!D)return;const rows=filtered()
 function setLang(l){L=l;try{localStorage.setItem('kr-kg-lang',l)}catch(e){}fillCalcSelects();if(D)fillFilters();renderAll()}
 $('lang-ru').onclick=()=>setLang('ru');$('lang-en').onclick=()=>setLang('en');
 ['in-usd','in-cc','in-kg'].forEach(id=>$(id).addEventListener('input',renderCalc));
-['in-year','in-fuel'].forEach(id=>$(id).addEventListener('change',renderCalc));
+['in-year','in-fuel','in-body'].forEach(id=>$(id).addEventListener('change',renderCalc));
 ['f-make','f-fuel','f-year','f-km','f-budget'].forEach(id=>$(id).addEventListener('change',()=>{showAll=false;renderAll()}));
 $('more').onclick=()=>{showAll=!showAll;renderModels(filtered())};
 fillCalcSelects();applyText();renderCalc();
