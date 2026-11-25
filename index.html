@@ -342,7 +342,7 @@ $('lang-ru').onclick=()=>setLang('ru');$('lang-en').onclick=()=>setLang('en');
 ['f-make','f-fuel','f-year','f-km','f-budget'].forEach(id=>$(id).addEventListener('change',()=>{showAll=false;renderAll()}));
 $('more').onclick=()=>{showAll=!showAll;renderModels(filtered())};
 fillCalcSelects();applyText();renderCalc();
-fetch('data.json').then(r=>r.json()).then(d=>{D=d;enrich();fillFilters();renderAll()}).catch(()=>{$('kpis').innerHTML='<div class="kpi"><div class="l">Data could not be loaded.</div></div>'});
+fetch('data.json?v=20261125b').then(r=>r.json()).then(d=>{D=d;enrich();fillFilters();renderAll()}).catch(()=>{$('kpis').innerHTML='<div class="kpi"><div class="l">Data could not be loaded.</div></div>'});
 </script>
 </body>
 </html>
