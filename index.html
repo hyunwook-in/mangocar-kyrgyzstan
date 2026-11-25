@@ -92,6 +92,10 @@ tr:last-child td{border-bottom:0}
 .car .nums span:nth-child(even){text-align:right}
 .car a{color:var(--accent);font-weight:600;font-size:13px;text-decoration:none}
 .car a:hover{text-decoration:underline}
+.car .links{display:grid;gap:6px;border-top:1px solid var(--line);padding-top:8px}
+.car .kgl{display:flex;flex-wrap:wrap;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+.car .kgl a{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:26px;padding:0 8px;border:1px solid var(--line);border-radius:6px;font-size:12.5px}
+.car .kgl a:hover{border-color:var(--accent);text-decoration:none}
 .notes{font-size:13px;color:var(--muted);display:grid;gap:8px;max-width:82ch}
 .notes b{color:var(--ink)}
 .empty{color:var(--muted);padding:16px}
@@ -182,8 +186,8 @@ const T={
   pAge:"Год выпуска",pKm:"Пробег (км)",pPrice:"Полная стоимость авто",pFuel:"Топливо",pCc:"Объём двигателя",cars:"авто",ofCars:"в плюсе",
   modH:"Модели с наибольшей доп. прибылью",modSub:"Модель, год и топливо, по которым в наличии не менее трёх автомобилей, отсортировано по медианной доп. прибыли. Действуют фильтры выше.",
   mModel:"Модель",mYear:"Год",mFuel:"Топливо",mN:"Авто",mFinal:"Полная стоимость (медиана)",mKg:"Цена в КР (медиана)",mGap:"Доп. прибыль (медиана)",mShare:"Доля в плюсе",more:"Показать больше",less:"Показать меньше",
-  stockH:"Автомобили в наличии с наибольшей доп. прибылью",stockSub:"Отдельные автомобили из наличия Mangocar. Ссылка открывает объявление с фото и отчётом об осмотре.",
-  sFinal:"Полная стоимость",sKg:"Цена в КР",sGap:"Доп. прибыль",sComps:"похожих объявлений",open:"Смотреть объявление",
+  stockH:"Автомобили в наличии с наибольшей доп. прибылью",stockSub:"Отдельные автомобили из наличия Mangocar. Первая ссылка открывает объявление на Mangocar с фото и отчётом об осмотре, номера ниже — похожие объявления на mashina.kg, по которым рассчитана цена в КР.",
+  sFinal:"Полная стоимость",sKg:"Цена в КР",sGap:"Доп. прибыль",sComps:"похожих объявлений",open:"Объявление на Mangocar",kgLinks:"Похожие на mashina.kg:",
   none:"По этому выбору автомобилей нет.",noPos:"По этому выбору нет автомобилей, которые дешевле рынка после всех расходов.",
   methH:"Методика и допущения",
   fuels:{Petrol:"Бензин",Diesel:"Дизель",Hybrid:"Гибрид",Electric:"Электро"},
@@ -208,8 +212,8 @@ const T={
   pAge:"Model year",pKm:"Mileage (km)",pPrice:"Total cost per car",pFuel:"Fuel",pCc:"Engine size",cars:"cars",ofCars:"positive",
   modH:"Models with the highest extra margin",modSub:"Model, year and fuel with at least three cars in stock, sorted by median extra margin. The filters above apply.",
   mModel:"Model",mYear:"Year",mFuel:"Fuel",mN:"Cars",mFinal:"Total cost (median)",mKg:"Kyrgyz price (median)",mGap:"Extra margin (median)",mShare:"Share positive",more:"Show more",less:"Show less",
-  stockH:"Cars in stock with the highest extra margin",stockSub:"Individual cars from Mangocar's stock. The link opens the listing with photos and inspection report.",
-  sFinal:"Total cost",sKg:"Kyrgyz price",sGap:"Extra margin",sComps:"comparable listings",open:"View listing",
+  stockH:"Cars in stock with the highest extra margin",stockSub:"Individual cars from Mangocar's stock. The first link opens the Mangocar listing with photos and inspection report; the numbers below open comparable mashina.kg listings used for the Kyrgyz price.",
+  sFinal:"Total cost",sKg:"Kyrgyz price",sGap:"Extra margin",sComps:"comparable listings",open:"Listing on Mangocar",kgLinks:"Comparable on mashina.kg:",
   none:"No cars match this selection.",noPos:"No cars in this selection cost less than the market after all costs.",
   methH:"Method and assumptions",
   fuels:{Petrol:"Petrol",Diesel:"Diesel",Hybrid:"Hybrid",Electric:"Electric"},
@@ -274,7 +278,7 @@ function renderCalc(){
    <div class="wfrow"><span>${t.wfD}</span><div class="bar"><span style="width:${w(Math.min(kg,k.final))};background:var(--line)"></span><span style="width:${w(gap)};background:var(--pos)"></span></div></div>`;
   $('legend').innerHTML=['var(--car)','var(--ship)','var(--duty)','var(--vat)','var(--local)','var(--pos)'].map((c2,i)=>`<span><i style="background:${c2}"></i>${t.lg[i]}</span>`).join('');
 }
-function enrich(){D.rows=D.cars.map(r=>{const k=cost(r[5],r[2],r[9],D.fuels[r[3]],r[10],D.cost);return {mk:r[0],mo:r[1],y:r[2],f:r[3],km:r[4]*1000,usd:r[5],kg:r[6],n:r[7],code:r[8],cc:r[9],final:k.final,gap:r[6]-k.final}})}
+function enrich(){D.rows=D.cars.map(r=>{const k=cost(r[5],r[2],r[9],D.fuels[r[3]],r[10],D.cost);return {mk:r[0],mo:r[1],y:r[2],f:r[3],km:r[4]*1000,usd:r[5],kg:r[6],n:r[7],code:r[8],cc:r[9],links:r[11]||[],final:k.final,gap:r[6]-k.final}})}
 function fillFilters(){
   const t=T[L],keep=id=>$(id).value;
   const mv=keep('f-make'),fv=keep('f-fuel'),yv=keep('f-year'),kv=keep('f-km'),bv=keep('f-budget');
@@ -325,7 +329,9 @@ function renderCards(rows){
   const t=T[L],top=[...rows].filter(r=>r.gap>0).sort((a,b)=>b.gap-a.gap).slice(0,24),ml=L==='ru'?'ru':'en';
   $('cards').innerHTML=top.length?top.map(r=>`<div class="car"><div><div class="t">${D.makes[r.mk]} ${D.models[r.mo]}</div><div class="m">${r.y} · ${t.fuels[D.fuels[r.f]]}${D.fuels[r.f]!=='Electric'?' · '+(r.cc/1000).toFixed(1).replace('.',L==='ru'?',':'.')+' L':''} · ${fmtN(r.km)} km</div></div>
    <div class="nums"><span>${t.sFinal}</span><span>${fmtD(r.final)}</span><span>${t.sKg}</span><span>${fmtD(r.kg)}</span><span>${t.sGap}</span><span class="gap-pos">${fmtSigned(r.gap)}</span></div>
-   <div class="m">${r.n} ${t.sComps} · ${fmtD(r.usd)} Korea</div><a href="https://mangoworldcar.com/${ml}/car-detail/${r.code}" target="_blank" rel="noopener">${t.open} →</a></div>`).join(''):`<div class="empty">${t.noPos}</div>`;
+   <div class="m">${r.n} ${t.sComps} · ${fmtD(r.usd)} Korea</div>
+   <div class="links"><a href="https://mangoworldcar.com/${ml}/car-detail/${r.code}" target="_blank" rel="noopener">${t.open} →</a>
+   ${r.links.length?`<div class="kgl"><span>${t.kgLinks}</span>${r.links.map((s,i)=>`<a href="https://mashina.kg/${L==='ru'?'':'en/'}details/${s}" target="_blank" rel="noopener">${i+1}</a>`).join('')}</div>`:''}</div></div>`).join(''):`<div class="empty">${t.noPos}</div>`;
 }
 function renderNotes(){$('notes').innerHTML=T[L].notes(D).map(s=>`<p style="margin:0">${s}</p>`).join('')}
 function renderAll(){applyText();renderCalc();if(!D)return;const rows=filtered();renderKpis(rows);renderPanels(rows);renderModels(rows);renderCards(rows);renderNotes()}
